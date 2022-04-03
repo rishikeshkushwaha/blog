@@ -1,0 +1,39 @@
+model Investment
+ uses "mmxprs", "mmsvg"
+
+ parameters
+  NUM=5                             ! Number of investments
+  BUDGET=50000                      ! Maximum budget
+ end-parameters
+
+ declarations
+  Investments=1..NUM                      ! Index range for investments
+  PV: array(Investments) of real       ! PV  of investments
+  AMOUNT: array(Investments) of real      ! AMOUNT of investments
+
+  x: array(Investments) of mpvar          ! 1 if we invest in investment i; 0 otherwise
+ end-declarations
+
+ !Item:      1        2      3      4     5
+  AMOUNT :: [16000, 14000, 22000, 12000, 38000]
+  PV:: [ 23000,  25000, 28000, 14000, 49000]
+
+ MaxVal:= sum(i in Investments) PV(i)*x(i)  ! Objective: maximize total PV
+
+                                    ! Budget restriction
+ WtMax:= sum(i in Investments) AMOUNT(i)*x(i) <= BUDGET
+
+ forall(i in Investments) x(i) <=1  ! All x are 0/1
+ x(1)=0
+ x(5)=1
+ x(2)=1
+ maximize(MaxVal)                   ! Solve the MIP-problem
+
+                                    ! Print out the solution
+ writeln("Solution:\n Objective: ", getobjval)
+ writeln("Investments  AMOUNT  PV")
+ forall(i in Investments)  writeln(i, ": ", getsol(x(i))," :", strfmt(AMOUNT(i),8,2), " : ",strfmt(PV(i),8,2))
+
+ ! Draw the solution
+
+end-model
